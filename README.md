@@ -53,16 +53,20 @@ PUT /orders/{id}/status — змінити статус існуючого за�
 
 Можливі статуси замовлень: New, Processing, Shipped, Delivered, Cancelled. 
 
-[gemini-code-1791658889290.sh](https://github.com/user-attachments/files/33289980/gemini-code-1791658889290.sh)
+Приклади запитів та відповідей
 
-Створення замовлення (POST /orders)
-cURL запит:
+## Приклади запитів
 
-curl -X POST [https://4xzeli51pa.execute-api.eu-central-1.amazonaws.com/orders](https://4xzeli51pa.execute-api.eu-central-1.amazonaws.com/orders) \
-  -H "Content-Type: application/json" \
-  -d '{"customerName": "Oleg", "product": "laptop", "quantity": 2}'
+Створити замовлення:
 
-  {
+```bash
+curl -X POST https://4xzeli51pa.execute-api.eu-central-1.amazonaws.com/orders -H "Content-Type: application/json" -d "{\"customerName\":\"Oleg\",\"product\":\"laptop\",\"quantity\":2}"
+```
+
+Що повертає:
+
+```json
+{
   "id": "36722322-6d67-4257-b5e8-623f636a767b",
   "customerName": "Oleg",
   "product": "laptop",
@@ -70,20 +74,19 @@ curl -X POST [https://4xzeli51pa.execute-api.eu-central-1.amazonaws.com/orders](
   "status": "New",
   "createdAt": "2026-10-10T18:49:02Z"
 }
+```
 
+Отримати замовлення (можна просто відкрити в браузері):
 
-Отримання замовлення (GET /orders/{id})
-cURL запит: 
+```bash
+curl https://4xzeli51pa.execute-api.eu-central-1.amazonaws.com/orders/36722322-6d67-4257-b5e8-623f636a767b
+```
 
-curl [https://4xzeli51pa.execute-api.eu-central-1.amazonaws.com/orders/36722322-6d67-4257-b5e8-623f636a767b](https://4xzeli51pa.execute-api.eu-central-1.amazonaws.com/orders/36722322-6d67-4257-b5e8-623f636a767b)
+Змінити статус:
 
-
-Оновлення статусу (PUT /orders/{id}/status)
-cURL запит:
-
-curl -X PUT [https://4xzeli51pa.execute-api.eu-central-1.amazonaws.com/orders/36722322-6d67-4257-b5e8-623f636a767b/status](https://4xzeli51pa.execute-api.eu-central-1.amazonaws.com/orders/36722322-6d67-4257-b5e8-623f636a767b/status) \
-  -H "Content-Type: application/json" \
-  -d '{"status": "Processing"}'
+```bash
+curl -X PUT https://4xzeli51pa.execute-api.eu-central-1.amazonaws.com/orders/36722322-6d67-4257-b5e8-623f636a767b/status -H "Content-Type: application/json" -d "{\"status\":\"Processing\"}"
+```
 
 
   Структура проєкту
