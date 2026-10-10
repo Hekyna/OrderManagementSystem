@@ -1,66 +1,62 @@
-# AWS Serverless Order API
+# Serverless Order API
 
-Курсовий/екзаменаційний проєкт з дисципліни **«Створення хмарних рішень з використанням AWS»** (Варіант 4).  
-**Автор:** Тімченко Микола (Група П42)  
+Екзаменаційна робота з дисципліни **«Створення хмарних рішень з використанням AWS»** (Варіант 4).  
+**Виконав:** Тімченко Микола, група П42  
 **Викладач:** Сиворка В. А.
 
 ---
 
-## Опис проєкту
+## 📌 Опис проєкту
 
-Даний проєкт є безсерверним (Serverless) бекендом для обробки та збереження замовлень. Вся інфраструктура працює виключно на хмарних ресурсах AWS без використання виділених серверів.
+Система для управління замовленнями, побудована за безсерверною архітектурою (Serverless) на базі сервісів AWS. Вхідні HTTP-запити приймає **API Gateway** та передає їх у хмарну функцію **AWS Lambda**. Вона обробляє бізнес-логіку, зберігає кожне замовлення у бакет **Amazon S3** у вигляді JSON-файлу, а при створенні нового замовлення надсилає повідомлення в чергу **Amazon SQS**.
 
-### Як працює система:
-1. **API Gateway** отримує зовнішні HTTP-запити від клієнта.
-2. **AWS Lambda** (на платформі .NET 8) обробляє бізнес-логіку.
-3. **Amazon S3** виступає основним сховищем — кожне замовлення зберігається у вигляді JSON-документа.
-4. **Amazon SQS** приймає фонові сповіщення про нові створені замовлення.
-5. **Console Client** — зручна C# програма для тестування CRUD-операцій з консолі.
+Для тестування розроблено консольний клієнт на C# (.NET 8) з інтерактивним меню.
 
 ---
 
-##  Задействовані AWS Сервіси
+## 🛠 Використані сервіси AWS
 
-- **AWS Lambda (`OrderApi`)** — хмарна функція на C#, яка реалізує ендпоїнти.
-- **Amazon API Gateway** — маршрутизатор HTTP-запитів до лямбди.
-- **Amazon S3** — бакет для файлового збереження замовлень (папка `orders/`).
-- **Amazon SQS** — черга повідомлень для обробки подій створення замовлень.
-- **IAM (Identity and Access Management)** — політики доступу для безпечної взаємодії Lambda з S3 та SQS.
-- **CloudWatch** — сервіс для логування відлагоджувальної інформації.
-
----
-
-##  Схема архітектури
-[ C# Console Client ] ──(HTTP)──> [ API Gateway ] ──> [ AWS Lambda ] ──┬──> [ Amazon S3 (JSON) ]
-└──> [ Amazon SQS Queue ]
-
-
-> **Примітка щодо безпеки:** Консольний клієнт не містить секретних ключів AWS (Access Keys). Доступ Lambda до ресурсів S3 та SQS регулюється IAM-роллю, а назви ресурсів передаються через змінні оточення (`BUCKET_NAME`, `QUEUE_URL`).
+- **AWS Lambda** — функція `OrderApi` (.NET 8), яка виконує бізнес-логіку обробки замовлень.
+- **Amazon API Gateway (HTTP API)** — шлюз із 3 маршрутами для прийому зовнішніх запитів.
+- **Amazon S3** — файлове сховище (структура `orders/{id}.json`).
+- **Amazon SQS** — черга повідомлень для подій створення замовлення.
+- **IAM** — політики безпеки та ролі для доступу Lambda до S3 та SQS.
+- **CloudWatch** — логування дій та відлагодження.
 
 ---
 
-## Робочий API Endpoint
+## 🏗 Архітектура системи
 
+```text
+[ C# Console Client ] ──(HTTP)──> [ API Gateway ] ──> [ AWS Lambda ] ──┬──> [ Amazon S3 ]
+                                                                       └──> [ Amazon SQS ]
+```
+
+> **Безпека:** Клієнт взаємодіє виключно через HTTPS і не містить секретних ключів AWS. Доступ Lambda до S3 та SQS забезпечується через IAM-роль, а параметри передаються через змінні оточення (`BUCKET_NAME`, `QUEUE_URL`).
+
+---
+
+## 🌐 Робочий URL API
+
+```text
 [https://4xzeli51pa.execute-api.eu-central-1.amazonaws.com](https://4xzeli51pa.execute-api.eu-central-1.amazonaws.com)
+```
 
+### Доступні маршрути:
+- `POST /orders` — створити нове замовлення (початковий статус `New`).
+- `GET /orders/{id}` — отримати замовлення за його `id`.
+- `PUT /orders/{id}/status` — змінити статус замовлення.
 
-Доступні маршрути:
-POST /orders — створити нове замовлення (за замовчуванням статус New).
+*Можливі статуси:* `New`, `Processing`, `Shipped`, `Delivered`, `Cancelled`.
 
-GET /orders/{id} — завантажити замовлення за його ID.
+---
 
-PUT /orders/{id}/status — змінити статус існуючого замовлення.
-
-Можливі статуси замовлень: New, Processing, Shipped, Delivered, Cancelled. 
-
-Приклади запитів та відповідей
-
-## Приклади запитів
+## 💻 Приклади запитів
 
 Створити замовлення:
 
 ```bash
-curl -X POST https://4xzeli51pa.execute-api.eu-central-1.amazonaws.com/orders -H "Content-Type: application/json" -d "{\"customerName\":\"Oleg\",\"product\":\"laptop\",\"quantity\":2}"
+curl -X POST [https://4xzeli51pa.execute-api.eu-central-1.amazonaws.com/orders](https://4xzeli51pa.execute-api.eu-central-1.amazonaws.com/orders) -H "Content-Type: application/json" -d "{\"customerName\":\"Oleg\",\"product\":\"laptop\",\"quantity\":2}"
 ```
 
 Що повертає:
@@ -79,40 +75,36 @@ curl -X POST https://4xzeli51pa.execute-api.eu-central-1.amazonaws.com/orders -H
 Отримати замовлення (можна просто відкрити в браузері):
 
 ```bash
-curl https://4xzeli51pa.execute-api.eu-central-1.amazonaws.com/orders/36722322-6d67-4257-b5e8-623f636a767b
+curl [https://4xzeli51pa.execute-api.eu-central-1.amazonaws.com/orders/36722322-6d67-4257-b5e8-623f636a767b](https://4xzeli51pa.execute-api.eu-central-1.amazonaws.com/orders/36722322-6d67-4257-b5e8-623f636a767b)
 ```
 
 Змінити статус:
 
 ```bash
-curl -X PUT https://4xzeli51pa.execute-api.eu-central-1.amazonaws.com/orders/36722322-6d67-4257-b5e8-623f636a767b/status -H "Content-Type: application/json" -d "{\"status\":\"Processing\"}"
+curl -X PUT [https://4xzeli51pa.execute-api.eu-central-1.amazonaws.com/orders/36722322-6d67-4257-b5e8-623f636a767b/status](https://4xzeli51pa.execute-api.eu-central-1.amazonaws.com/orders/36722322-6d67-4257-b5e8-623f636a767b/status) -H "Content-Type: application/json" -d "{\"status\":\"Processing\"}"
 ```
 
+---
 
-  Структура проєкту
-OrderApi/ — джерельні файли бекенду AWS Lambda (.NET 8).
+## 📁 Структура проєкту
 
-OrderClient/ — вихідний код консольного клієнта для тестування API.
+- **OrderApi** — проєкт AWS Lambda (Handler: `OrderApi::OrderApi.Function::Handler`).
+- **OrderClient** — консольний застосунок для взаємодії з API.
 
+---
 
-Як розгортати та запускати
-Бекенд (AWS Lambda):
+## 🚀 Як запустити
 
-Виконати комбінацію команд: dotnet publish -c Release
+1. **Задеплоїти Lambda:**
+   - Виконати збірку: `dotnet publish -c Release`
+   - Запакувати вміст папки публікації в ZIP та завантажити в консоль AWS Lambda.
+   - Прописати змінні оточення `BUCKET_NAME` та `QUEUE_URL`.
+   - Налаштувати тригери у шлюзі **API Gateway**.
 
-Архівувати публікацію в .zip та завантажити в консоль AWS Lambda.
-
-Задати змінні оточення BUCKET_NAME і QUEUE_URL.
-
-Налаштувати тригери у API Gateway.
-
-Запуск клієнта:
-
-Відкрити рішення у Visual Studio.
-
-Запустити проєкт OrderClient.
-
-Використовувати інтерактивне меню (1 — створити, 2 — знайти, 3 — змінити статус, 0 — вихід).
+2. **Запустити консольний клієнт:**
+   - Відкрити рішення у Visual Studio.
+   - Встановити проєкт **OrderClient** як стартовий і запустити.
+   - У меню вибирати відповідні дії (1 — створити, 2 — знайти за Id, 3 — змінити статус, 0 — вихід).
 
 Скріншоти підтвердження роботи
 
